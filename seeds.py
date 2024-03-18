@@ -33,10 +33,7 @@ aut = Author(fullname = 'Dimitri', born_date = '1.1.2021', born_location = 'In t
 tag = Quote(tags = ['123','222','44'], author=aut, quote='There were 3 goats. How many? You have 30 seconds - Jacques Fresko').save()
 tag = Quote(tags = ['123','222','44'], author=aut, quote='"I didnt say that" - Jacques Fresko').save()
 
-def parse_data():
-    url = 'https://quotes.toscrape.com/'
-    quotes = []
-    authors = []
+def parse_data(url='https://quotes.toscrape.com/', quotes=[],authors=[]):
     html_doc = requests.get(url)
 
     if html_doc.status_code == 200:
@@ -74,12 +71,14 @@ def parse_data():
                     'born_location': born_location,
                     'description':description
                 })
-
-    with open('quotes.json', 'w') as file:
-        file_data = json.dump(quotes, file, indent=2)
-        
-    with open('authors.json', 'w') as file:
-        file_data = json.dump(authors, file, indent=2)
+        if soup.select('body')[0].find('li', attrs={'class': 'next'}):
+            parse_data('https://quotes.toscrape.com/' + soup.select('body')[0].find('li', attrs={'class': 'next'}).find('a').get('href'), quotes, authors)
+        else:
+            with open('quotes.json', 'w') as file:
+                file_data = json.dump(quotes, file, indent=2)
+                
+            with open('authors.json', 'w') as file:
+                file_data = json.dump(authors, file, indent=2)
 
 if __name__ == '__main__':
     parse_data()
